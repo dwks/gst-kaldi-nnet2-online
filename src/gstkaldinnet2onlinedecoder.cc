@@ -517,7 +517,7 @@ static void gst_kaldinnet2onlinedecoder_init(
   std::vector<std::pair<std::string, SimpleOptions::OptionInfo> > option_info_list;
   option_info_list = filter->simple_options->GetOptionInfoList();
   int32 i = 0;
-  for (vector<std::pair<std::string, SimpleOptions::OptionInfo> >::iterator dx =
+  for (std::vector<std::pair<std::string, SimpleOptions::OptionInfo> >::iterator dx =
       option_info_list.begin(); dx != option_info_list.end(); dx++) {
     std::pair<std::string, SimpleOptions::OptionInfo> result = (*dx);
     SimpleOptions::OptionInfo option_info = result.second;
@@ -1309,7 +1309,7 @@ static void gst_kaldinnet2onlinedecoder_unthreaded_decode_segment(Gstkaldinnet2o
     if (silence_weighting.Active()) {
       silence_weighting.ComputeCurrentTraceback(decoder.Decoder());
       silence_weighting.GetDeltaWeights(feature_pipeline.NumFramesReady(), &delta_weights);
-      feature_pipeline.UpdateFrameWeights(delta_weights);
+      feature_pipeline.IvectorFeature()->UpdateFrameWeights(delta_weights);
     }
 
     decoder.AdvanceDecoding();
@@ -1733,8 +1733,9 @@ gst_kaldinnet2onlinedecoder_load_lm_fst(Gstkaldinnet2onlinedecoder * filter,
         int32 num_states_cache = 50000;
         fst::CacheOptions cache_opts(true, num_states_cache);
         fst::StdToLatticeMapper<BaseFloat> mapper;
+        fst::MapFstOptions map_opt(cache_opts);
         filter->lm_fst = new fst::MapFst<fst::StdArc, LatticeArc,
-            fst::StdToLatticeMapper<BaseFloat> >(*std_lm_fst, mapper, cache_opts);
+            fst::StdToLatticeMapper<BaseFloat> >(*std_lm_fst, mapper, map_opt);
         delete std_lm_fst;
         delete fst;
         // FIXME: maybe?
